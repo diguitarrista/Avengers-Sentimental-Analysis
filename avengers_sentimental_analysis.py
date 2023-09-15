@@ -14,9 +14,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from wordcloud import WordCloud
 from collections import Counter
+from textblob import TextBlob
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
+nltk.download('vader_lexicon')
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import torch
+from transformers import RobertaTokenizer, RobertaForSequenceClassification
+from transformers import pipeline
 
 avengers = ["TONY",
             "STEVE",
@@ -171,9 +177,82 @@ plt.title('Iron Man Word Cloud Chart Avengers Endgame')
 # Show the plot
 plt.show()
 
-# In[ ] Sentiment Analysis using TextBlob
+# In[ ] Sentiment Analysis using TextBlob, VADER and RoBERTa
 
-from textblob import TextBlob
+# TextBlob
+phrase = avenger_lines["TONY"][2]
+analysis_textblob = TextBlob(phrase)
+
+#VADER
+
+# Initialize the VADER sentiment analyzer
+analyzer = SentimentIntensityAnalyzer()
+
+# Perform sentiment analysis and calculate the compound score
+sentiment_scores_vader = analyzer.polarity_scores(phrase)
+
+# Get the compound sentiment score (a value between -1 and 1)
+compound_score_vader = sentiment_scores_vader['compound']
+
+# Get sentiment polarity (positive, negative, or neutral)
+sentiment_textblob = analysis_textblob.sentiment.polarity
+
+#RoBERTa
+# Load the pre-trained RoBERTa model and tokenizer for sentiment analysis
+model_name = "roberta-base"
+tokenizer = RobertaTokenizer.from_pretrained(model_name)
+model = RobertaForSequenceClassification.from_pretrained(model_name)
+
+# Initialize a sentiment analysis pipeline
+sentiment_analysis = pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+
+# Perform sentiment analysis
+sentiment_score_roberta = sentiment_analysis(phrase)
+
+# In[ ] Classify sentiment scores based on the thresholds commonly used for sentiment analysis
+
+# Define the sentiment score thresholds
+threshold_textblob = 0.0  # Adjust this threshold as needed
+threshold_vader = 0.05    # Adjust this threshold as needed
+
+# Sentiment scores
+textblob_polarity = sentiment_textblob
+vader_scores = sentiment_scores_vader
+roberta_score = sentiment_score_roberta[0]["score"]
+
+# Classification based on TextBlob
+if textblob_polarity > threshold_textblob:
+    textblob_sentiment = "Positive"
+elif textblob_polarity < -threshold_textblob:
+    textblob_sentiment = "Negative"
+else:
+    textblob_sentiment = "Neutral"
+
+# Classification based on VADER compound score
+if vader_scores['compound'] >= threshold_vader:
+    vader_sentiment = "Positive"
+elif vader_scores['compound'] <= -threshold_vader:
+    vader_sentiment = "Negative"
+else:
+    vader_sentiment = "Neutral"
+
+# Classification for RoBERTa (assuming a threshold of 0.5 for positive sentiment)
+if roberta_score > 0.5:
+    roberta_sentiment = "Positive"
+else:
+    roberta_sentiment = "Negative"
+
+# Print the entiment score
+print("Tony", phrase)
+print()
+print("TextBlob polarity:", sentiment_textblob)
+print("TextBlob Sentiment:", textblob_sentiment)
+print("VADER score:", sentiment_scores_vader, compound_score_vader)
+print("VADER Sentiment:", vader_sentiment)
+print("RoBERTa score:", sentiment_score_roberta[0]["score"])
+print("RoBERTa Sentiment:", roberta_sentiment)
+
+# In[ ] Sentiment Analysis using TextBlob
 
 # Initialize variables for sentiment calculation
 total_polarity = 0
@@ -205,12 +284,6 @@ print(f"Overall Sentiment: {overall_sentiment_label} (Score: {overall_sentiment}
 
 
 # In[ ] Sentiment Analysis using VADER
-
-import nltk
-
-nltk.download('vader_lexicon')
-
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Initialize the VADER sentiment analyzer
 analyzer = SentimentIntensityAnalyzer()
@@ -244,10 +317,6 @@ print(f"Overall Sentiment: {overall_sentiment_label} (Score: {overall_sentiment}
 
 
 # In[ ] Sentiment Analysis using Roberta
-
-import torch
-from transformers import RobertaTokenizer, RobertaForSequenceClassification
-from transformers import pipeline
 
 # Load the pre-trained RoBERTa model and tokenizer for sentiment analysis
 model_name = "roberta-base"
@@ -349,8 +418,6 @@ plt.ylabel('Frequency')
 plt.show()
 
 # In[ ] Sentiment Analysis using VADER of all lines for each avenger
-
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
 # Initialize the VADER sentiment analyzer
 analyzer = SentimentIntensityAnalyzer()
