@@ -453,7 +453,7 @@ for key, phrases in avenger_lines.items():
     # Determine the overall sentiment based on the average score
     if average_sentiment_score > 0.5:
         overall_sentiment = "POSITIVE" 
-    elif average_sentiment_score == 0:
+    elif average_sentiment_score >= 0.2:
         overall_sentiment = "NEUTRAL" 
     else: 
         overall_sentiment = "NEGATIVE"
@@ -518,7 +518,20 @@ df = pd.DataFrame(data)
 
 # Function to determine sentiment
 def determine_sentiment(score):
-    return 'Positive' if score > 0.5 else 'Negative'
+    if data['Method'] == 'TextBlob' or data['Method'] == 'Vader':
+        if data['Average Score'] > 0: 
+            return 'Positive'
+        elif data['Average Score'] == 0:
+            return 'Neutral'
+        else:
+            return 'Negative'
+    else:
+        if data['Average Score'][0] > 0.5: 
+            return 'Positive'
+        elif data['Average Score'][0] >= 0.2:
+            return 'Neutral'
+        else:
+            return 'Negative'
 
 # Apply the sentiment determination function to the 'Average Score' column
 df['Sentiment'] = df['Average Score'].apply(determine_sentiment)
