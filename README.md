@@ -1,4 +1,4 @@
-# Avengers-Sentimental-Analysis
+# Avengers Sentimental Analysis
 
 ## Overview
 This Python script performs sentiment analysis on the Avengers: Endgame movie script using various libraries including TextBlob, VADER, and RoBERTa. The script was written by [@diguitarrista](https://github.com/diguitarrista) for demonstration purposes and is not intended for commercial or academic use.
